@@ -1,6 +1,7 @@
 import os
 import io
 import base64
+import imghdr
 import discord
 import cv2
 import numpy as np
@@ -18,6 +19,20 @@ anthropic_client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
+
+
+def detect_media_type(image_bytes: bytes) -> str:
+    """Detect image media type from file signature bytes."""
+    detected = imghdr.what(None, h=image_bytes)
+    mapping = {
+        "jpeg": "image/jpeg",
+        "png": "image/png",
+        "gif": "image/gif",
+        "webp": "image/webp",
+    }
+    if detected not in mapping:
+        raise ValueError("Could not detect a supported image format after encoding.")
+    return mapping[detected]
        
 def process_image_with_claude(image_bytes: bytes, media_type: str) -> str:
     """Encodes raw image bytes and sends them to Claude 4.5 Haiku."""
@@ -117,14 +132,18 @@ async def extract_stats(ctx):
 
             else:
                 await ctx.send(f"An error occurred while decoding the image.")
+                return
 
-            success, encoded_image = cv2.imencode('.png', img)
+            success, encoded_image = cv2.imencode('.png', thresh)
             if not success:
                 await ctx.send(f"An error occurred while encoding the processed image.")                
                 return
+
+            encoded_bytes = encoded_image.tobytes()
+            encoded_media_type = detect_media_type(encoded_bytes)
             
             # Send to Claude
-            json_output = process_image_with_claude(encoded_image.tobytes(), "image/png")
+            json_output = process_image_with_claude(encoded_bytes, encoded_media_type)
 
             # Send JSON output back to Discord channel inside a code block
             # Note: Discord has a 2000 character limit per message, a standard JSON will easily fit.

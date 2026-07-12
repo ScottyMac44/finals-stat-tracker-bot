@@ -124,7 +124,7 @@ async def extract_stats(ctx):
                 return
             
             # Send to Claude
-            json_output = process_image_with_claude(encoded_image.tobytes(), attachment.content_type)
+            json_output = process_image_with_claude(encoded_image.tobytes(), "image/png")
 
             # Send JSON output back to Discord channel inside a code block
             # Note: Discord has a 2000 character limit per message, a standard JSON will easily fit.

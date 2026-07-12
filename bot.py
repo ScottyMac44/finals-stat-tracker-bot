@@ -187,10 +187,6 @@ async def extract_stats(ctx):
                 view=view
             )
 
-            # Send JSON output back to Discord channel inside a code block
-            # Note: Discord has a 2000 character limit per message, a standard JSON will easily fit.
-            await ctx.send(f"```json\n{json_output}\n```")
-
         except Exception as e:
             await ctx.send(f"An error occurred while processing the image: {str(e)}")
 

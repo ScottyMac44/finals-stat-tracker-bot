@@ -21,6 +21,42 @@ intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 
+class StatsVerificationView(discord.ui.View):
+    def __init__(self, original_author):
+        super().__init__(timeout=300) # 5-minute timeout
+        self.original_author = original_author
+
+    @discord.ui.button(label="Data is Correct", style=discord.ButtonStyle.green)
+    async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # Ensure only the original user can click the button
+        if interaction.user != self.original_author:
+            await interaction.response.send_message("Only the uploader can confirm this data.", ephemeral=True)
+            return
+
+        # Disable buttons after click
+        for child in self.children:
+            child.disabled = True
+        
+        await interaction.response.edit_message(content="Data confirmed! Sending off to the database...", view=self)
+        
+        # TODO: Implement your database logic here
+
+    @discord.ui.button(label="Needs Correction", style=discord.ButtonStyle.red)
+    async def reject(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # Ensure only the original user can click the button
+        if interaction.user != self.original_author:
+            await interaction.response.send_message("Only the uploader can reject this data.", ephemeral=True)
+            return
+
+        # Disable buttons after click
+        for child in self.children:
+            child.disabled = True
+            
+        await interaction.response.edit_message(content="Data marked as incorrect. Initiating manual correction...", view=self)
+        
+        # TODO: Implement your manual correction logic here
+
+
 def detect_media_type(image_bytes: bytes) -> str:
     """Detect image media type from file signature bytes."""
     kind = filetype.guess(image_bytes)
@@ -36,12 +72,14 @@ def process_image_with_claude(image_bytes: bytes, media_type: str) -> str:
     Analyze this end-of-match scoreboard from the video game THE FINALS.
     Extract the stats for all visible players across all teams.
     It is critical that the team names and usernames are parsed correctly. A name you will see often is CHEEMSBURBGER, not CHEEMSBURGER.
+    The gamemode is at the top-left of the screenshot. Typically this is either "HEAD2HEAD", "FINAL ROUND" or "QUICK CASH".
     The single letter before a username which is either "H", "M" or "L" indicates the class, and can be ignored.
     A username may also have a clan tag before it, which is typically 3-5 small characters in a box, can also be ignored.
     Each username has a hashtag and then a 4-digit ID at the end. This can also be ignored.
     The winning team is the team with the number 1 to the left of the scoreboard.
     Return ONLY a valid, raw JSON object matching this schema. Do not wrap it in any markdown block quotes. Just text as if it were a plain JSON file.
     {
+        "gamemode": "string"
         "winning_team": "string"
         "match_results": [
             {
@@ -138,6 +176,16 @@ async def extract_stats(ctx):
             
             # Send to Claude
             json_output = process_image_with_claude(encoded_bytes, encoded_media_type)
+
+            json_file = discord.File(io.BytesIO(json_output.encode('utf-8')), filename="match_stats.json")
+
+            view = StatsVerificationView(ctx.author)
+
+            await ctx.send(
+                content=f"{ctx.author.mention}, here is the parsed data. Please verify if it is correct:",
+                file=json_file,
+                view=view
+            )
 
             # Send JSON output back to Discord channel inside a code block
             # Note: Discord has a 2000 character limit per message, a standard JSON will easily fit.

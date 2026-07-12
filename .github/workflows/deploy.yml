@@ -18,13 +18,16 @@ jobs:
           script: |
             set -euo pipefail
 
+            BASE_HOME="${HOME:-/home/$(whoami)}"
+
             # Detect the actual deploy directory; fail loudly if neither exists.
-            if [ -d /home/admin/finals-scoreboard-tracker/.git ]; then
-              DEPLOY_DIR=/home/admin/finals-scoreboard-tracker
-            elif [ -d /home/admin/finals-stats-tracker-bot/.git ]; then
-              DEPLOY_DIR=/home/admin/finals-stats-tracker-bot
+            if [ -d "$BASE_HOME/finals-scoreboard-tracker/.git" ]; then
+              DEPLOY_DIR="$BASE_HOME/finals-scoreboard-tracker"
+            elif [ -d "$BASE_HOME/finals-stats-tracker-bot/.git" ]; then
+              DEPLOY_DIR="$BASE_HOME/finals-stats-tracker-bot"
             else
               echo "ERROR: Could not find repo directory on EC2."
+              echo "Checked under: $BASE_HOME"
               exit 1
             fi
 

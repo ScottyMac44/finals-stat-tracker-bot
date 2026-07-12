@@ -20,7 +20,6 @@ intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-
 class StatsVerificationView(discord.ui.View):
     def __init__(self, original_author):
         super().__init__(timeout=300) # 5-minute timeout
@@ -77,6 +76,7 @@ def process_image_with_claude(image_bytes: bytes, media_type: str) -> str:
     A username may also have a clan tag before it, which is typically 3-5 small characters in a box, can also be ignored.
     Each username has a hashtag and then a 4-digit ID at the end. This can also be ignored.
     The winning team is the team with the number 1 to the left of the scoreboard.
+    After usernames, the scoreboard from left to right has the following columns: E (eliminations), A (assists), D (deaths), R (revives), coins (IGNORE THIS COLUMN), combat score, support score, objective score.
     Return ONLY a valid, raw JSON object matching this schema. Remove the "```json" at the beginning and the "```" at the end.
     {
         "gamemode": "string"
@@ -87,13 +87,13 @@ def process_image_with_claude(image_bytes: bytes, media_type: str) -> str:
             "players": [
                     {
                         "username": "string",
-                        "combat_score": integer,
-                        "support_score": integer,
-                        "objective_score": integer,
                         "eliminations": integer,
                         "assists": integer,
                         "deaths": integer,
                         "revives": integer
+                        "combat_score": integer,
+                        "support_score": integer,
+                        "objective_score": integer,
                     }
                 ]
             }
@@ -152,14 +152,11 @@ async def extract_stats(ctx):
             nparr = np.frombuffer(image_bytes, np.uint8)
             img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
             if img is not None:
-                # 1. Crop to the scoreboard area (adjust bounding box ratios for your resolution)
+                # Convert to grayscale
                 h, w, _ = img.shape
-                scoreboard_crop = img[int(h*0):int(h*0.8), int(w*0):int(w*0.7)]
+                gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
                 
-                # 2. Convert to grayscale
-                gray = cv2.cvtColor(scoreboard_crop, cv2.COLOR_BGR2GRAY)
-                
-                # 3. Increase contrast / thresholding to make the text pure white, background pure black
+                # Increase contrast / thresholding to make the text pure white, background pure black
                 _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY)
 
             else:

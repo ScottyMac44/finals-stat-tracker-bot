@@ -35,12 +35,12 @@ def process_image_with_claude(image_bytes: bytes, media_type: str) -> str:
     prompt = """
     Analyze this end-of-match scoreboard from the video game THE FINALS.
     Extract the stats for all visible players across all teams.
-    It is critical that the team names and usernames are parsed correctly.
+    It is critical that the team names and usernames are parsed correctly. A name you will see often is CHEEMSBURBGER, not CHEEMSBURGER.
     The single letter before a username which is either "H", "M" or "L" indicates the class, and can be ignored.
     A username may also have a clan tag before it, which is typically 3-5 small characters in a box, can also be ignored.
     Each username has a hashtag and then a 4-digit ID at the end. This can also be ignored.
     The winning team is the team with the number 1 to the left of the scoreboard.
-    Return ONLY a valid, raw JSON object matching this schema. Do not wrap it in markdown block quotes.
+    Return ONLY a valid, raw JSON object matching this schema. DO NOT WRAP IT IN MARKDOWN "```" CODE BLOCK QUOTES. JUST RAW JSON.
     {
         "winning_team": "string"
         "match_results": [

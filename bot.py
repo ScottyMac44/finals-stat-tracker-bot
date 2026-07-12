@@ -1,11 +1,11 @@
 import os
 import io
 import base64
-import imghdr
 import discord
 import cv2
 import numpy as np
 import json
+import filetype
 from discord.ext import commands
 from anthropic import Anthropic
 from dotenv import load_dotenv
@@ -23,16 +23,10 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 def detect_media_type(image_bytes: bytes) -> str:
     """Detect image media type from file signature bytes."""
-    detected = imghdr.what(None, h=image_bytes)
-    mapping = {
-        "jpeg": "image/jpeg",
-        "png": "image/png",
-        "gif": "image/gif",
-        "webp": "image/webp",
-    }
-    if detected not in mapping:
+    kind = filetype.guess(image_bytes)
+    if kind is None or kind.mime not in {"image/jpeg", "image/png", "image/gif", "image/webp"}:
         raise ValueError("Could not detect a supported image format after encoding.")
-    return mapping[detected]
+    return kind.mime
        
 def process_image_with_claude(image_bytes: bytes, media_type: str) -> str:
     """Encodes raw image bytes and sends them to Claude 4.5 Haiku."""

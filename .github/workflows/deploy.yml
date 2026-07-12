@@ -17,5 +17,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/admin/finals-stat-tracker-bot/
+            .venv/bin/pip install -r requirements.txt
             git pull
             sudo systemctl restart finalsbot

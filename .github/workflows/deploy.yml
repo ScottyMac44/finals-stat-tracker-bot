@@ -16,33 +16,6 @@ jobs:
           username: admin
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            set -euo pipefail
-
-            # Detect the actual deploy directory; fail loudly if neither exists.
-            if [ -d "/home/admin/finals-scoreboard-tracker/.git" ]; then
-              DEPLOY_DIR="/home/admin/finals-scoreboard-tracker"
-            elif [ -d "/home/admin/finals-stats-tracker-bot/.git" ]; then
-              DEPLOY_DIR="/home/admin/finals-stats-tracker-bot"
-            else
-              echo "ERROR: Could not find repo directory on EC2."
-              echo "Checked under: /home/admin"
-              exit 1
-            fi
-
-            cd "$DEPLOY_DIR"
-            echo "Deploying from: $(pwd)"
-
-            # Ensure server code exactly matches origin/main.
-            git fetch --prune origin
-            git checkout main
-            git reset --hard origin/main
-
-            # Install updated dependencies when a venv exists in the project.
-            if [ -d .venv ]; then
-              . .venv/bin/activate
-              python -m pip install -r requirements.txt
-            fi
-
-            # -n prevents hanging if sudo needs an interactive password.
-            sudo -n systemctl restart finalsbot.service
-            sudo -n systemctl --no-pager status finalsbot.service -n 25
+            cd /home/admin/finals-stat-tracker-bot/
+            git pull
+            sudo systemctl restart finalsbot

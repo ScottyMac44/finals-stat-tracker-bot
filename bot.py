@@ -77,7 +77,7 @@ def process_image_with_claude(image_bytes: bytes, media_type: str) -> str:
     A username may also have a clan tag before it, which is typically 3-5 small characters in a box, can also be ignored.
     Each username has a hashtag and then a 4-digit ID at the end. This can also be ignored.
     The winning team is the team with the number 1 to the left of the scoreboard.
-    Return ONLY a valid, raw JSON object matching this schema. Do not wrap it in any markdown block quotes. Just text as if it were a plain JSON file.
+    Return ONLY a valid, raw JSON object matching this schema. Remove the "```json" at the beginning and the "```" at the end.
     {
         "gamemode": "string"
         "winning_team": "string"

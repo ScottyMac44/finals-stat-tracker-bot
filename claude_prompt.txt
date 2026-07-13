@@ -1,0 +1,31 @@
+Analyze this end-of-match scoreboard from the video game THE FINALS.
+Extract the stats for all visible players across all teams.
+It is critical that the team names and usernames are parsed correctly. A name you will see often is CHEEMSBURBGER, not CHEEMSBURGER.
+The gamemode is at the top-left of the screenshot. Typically this is either "HEAD2HEAD", "FINAL ROUND" or "QUICK CASH".
+The single letter before a username which is either "H", "M" or "L" indicates the class, and can be ignored.
+A username may also have a clan tag before it, which is typically 3-5 small characters in a box, can also be ignored.
+Each username has a hashtag and then a 4-digit ID at the end. This can also be ignored.
+The winning team is the team with the number 1 to the left of the scoreboard.
+After usernames, the scoreboard from left to right has the following columns: E (eliminations), A (assists), D (deaths), R (revives), coins (IGNORE THIS COLUMN), combat score, support score, objective score.
+Return ONLY a valid, raw JSON object matching this schema. Remove the "```json" at the beginning and the "```" at the end.
+{
+    "gamemode": "string"
+    "winning_team": "string"
+    "match_results": [
+        {
+        "team_name": "string",
+        "players": [
+                {
+                    "username": "string",
+                    "eliminations": integer,
+                    "assists": integer,
+                    "deaths": integer,
+                    "revives": integer
+                    "combat_score": integer,
+                    "support_score": integer,
+                    "objective_score": integer,
+                }
+            ]
+        }
+    ]
+}
